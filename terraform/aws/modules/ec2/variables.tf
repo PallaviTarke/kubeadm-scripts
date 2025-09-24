@@ -1,5 +1,7 @@
-provider "aws" {
-  region = "us-west-2"
+provider "google" {
+  project = "project-pallavi-tarke"
+  region  = "asia-south1"
+  zone    = "asia-south1-c"
 }
 
 variable "instance_name" {
@@ -7,24 +9,29 @@ variable "instance_name" {
   default = "live-test-instance"
 }
 
-variable "ami_id" {
+variable "image" {
   type    = string
-  default = "ami-0735c191cf914754d"
+  default = "projects/ubuntu-os-cloud/global/images/family/ubuntu-2004-lts"
 }
 
-variable "instance_type" {
+variable "machine_type" {
   type    = string
-  default = "t2.small"
+  default = "e2-small"
 }
 
-variable "key_name" {
+variable "network" {
   type    = string
-  default = "techiescamp"
+  default = "default"
 }
 
-variable "security_group_ids" {
-  type    = list(string)
-  default = ["sg-01ce819e8d65269f0"]
+variable "subnetwork" {
+  type    = string
+  default = "default"
+}
+
+variable "zone" {
+  type    = string
+  default = "asia-south1-c"
 }
 
 variable "instance_count" {
@@ -32,48 +39,42 @@ variable "instance_count" {
   default = 1
 }
 
-variable "subnet_ids" {
-  type    = list(string)
-  default = ["subnet-058a7514ba8adbb07", "subnet-0dbcd1ac168414927", "subnet-032f5077729435858"]
-}
-
 variable "inbound_from_port" {
   type    = list(string)
-  default = ["80", "80", "80"]
+  default = ["22"]
 }
 
 variable "inbound_to_port" {
   type    = list(string)
-  default = ["80", "80", "80"]
+  default = ["22"]
 }
 
 variable "inbound_protocol" {
   type    = list(string)
-  default = ["TCP", "TCP", "TCP"]
+  default = ["tcp"]
 }
 
 variable "inbound_cidr" {
   type    = list(string)
-  default = ["10.2.20.0/22", "10.2.28.0/22", "10.2.24.0/22"]
+  default = ["0.0.0.0/0"]
 }
 
 variable "outbound_from_port" {
   type    = list(string)
-  default = ["32768", "32768", "32768"]
+  default = ["0"]
 }
 
 variable "outbound_to_port" {
   type    = list(string)
-  default = ["61000", "61000", "61000"]
+  default = ["65535"]
 }
 
 variable "outbound_protocol" {
   type    = list(string)
-  default = ["TCP", "TCP", "TCP"]
+  default = ["all"]
 }
 
 variable "outbound_cidr" {
   type    = list(string)
-  default = ["10.2.20.0/22", "10.2.28.0/22", "10.2.24.0/22"]
+  default = ["0.0.0.0/0"]
 }
-

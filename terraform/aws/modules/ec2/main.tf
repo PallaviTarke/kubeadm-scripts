@@ -1,45 +1,41 @@
-resource "aws_security_group" "instance-sg" {
-  name        = "Ks Node SG"
-  description = "SG for Kubeadm Nodes"
+resource "google_compute_firewall" "instance_fw" {
+  name    = "k8s-node-fw"
+  network = var.network
 
-  dynamic "ingress" {
+  # Inbound rules
+  dynamic "allow" {
     for_each = toset(range(length(var.inbound_from_port)))
     content {
-      from_port   = var.inbound_from_port[ingress.key]
-      to_port     = var.inbound_to_port[ingress.key]
-      protocol    = var.inbound_protocol[ingress.key]
-      cidr_blocks = [var.inbound_cidr[ingress.key]]
+      protocol = lower(var.inbound_protocol[allow.key])
+      ports    = [ "${var.inbound_from_port[allow.key]}-${var.inbound_to_port[allow.key]}" ]
     }
   }
 
-  dynamic "egress" {
-    for_each = toset(range(length(var.outbound_from_port)))
-    content {
-      from_port   = var.outbound_from_port[egress.key]
-      to_port     = var.outbound_to_port[egress.key]
-      protocol    = var.outbound_protocol[egress.key]
-      cidr_blocks = [var.outbound_cidr[egress.key]]
-    }
-  }
+  source_ranges = var.inbound_cidr
 }
 
+resource "google_compute_instance" "example" {
+  count        = var.instance_count
+  name         = count.index == 0 ? "controlplane" : "node0${count.index}"
+  machine_type = var.machine_type
+  zone         = var.zone
 
-resource "aws_instance" "example" {
-  count = var.instance_count
-
-  ami                    = var.ami_id
-  instance_type          = var.instance_type
-  key_name               = var.key_name
-  vpc_security_group_ids = [aws_security_group.instance-sg.id]
-
-  user_data = <<-EOF
-    #cloud-config
-    hostname: ${count.index == 0 ? "controlplane" : "node0${count.index}"}
-  EOF
-
-tags = {
-    Name = count.index == 0 ? "controlplane" : "node0${count.index}"
+  boot_disk {
+    initialize_params {
+      image = var.image
+    }
   }
 
-  subnet_id = element(var.subnet_ids, count.index % length(var.subnet_ids))
+  network_interface {
+    network    = var.network
+    subnetwork = var.subnetwork
+    access_config {} # External IP
+  }
+
+  metadata_startup_script = <<-EOF
+    #!/bin/bash
+    hostnamectl set-hostname ${count.index == 0 ? "controlplane" : "node0${count.index}"}
+  EOF
+
+  tags = ["k8s-node"]
 }
