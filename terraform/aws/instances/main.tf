@@ -2,13 +2,14 @@ provider "google" {
   project = "project-pallavi-tarke"   # Replace with your GCP Project ID
   region  = "asia-south1"
   zone    = "asia-south1-c"
+  credentials = file("C:/Users/pallavi/Downloads/project-pallavi-tarke-83d5cf06d0e8.json")
 }
 
 module "gce_instance" {
   source = "../modules/compute"
 
   instance_name   = "k8s-node"
-  image           = "projects/ubuntu-os-cloud/global/images/family/ubuntu-2004-lts"
+  image = "ubuntu-os-cloud/ubuntu-2204-lts"
   machine_type    = "e2-medium"
   network         = "default"
   subnetwork      = "default"
