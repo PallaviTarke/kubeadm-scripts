@@ -1,0 +1,14 @@
+# frontend-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: crudapp
+spec:
+  selector:
+    app: frontend
+  type: NodePort
+  ports:
+    - port: 80         # Service port
+      targetPort: 3000 # Container port (check your frontend-deployment.yaml)
+      nodePort: 32001  # External port on VM

@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: redis-init
+  namespace: crudapp
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis-init
+        image: redis:7.2
+        command: [ "bash", "-c" ]
+        args:
+          - |
+            echo "⏳ Waiting for Redis pods to be ready..."
+            for i in {0..5}; do
+              until redis-cli -h redis-$i.redis.crudapp.svc.cluster.local -p 6379 PING; do
+                echo "Redis pod redis-$i not ready, retrying..."
+                sleep 5
+              done
+            done
+            echo "✅ All Redis pods are ready. Initializing cluster..."
+            yes yes | redis-cli -a pass123 --cluster create \
+              redis-0.redis.crudapp.svc.cluster.local:6379 \
+              redis-1.redis.crudapp.svc.cluster.local:6379 \
+              redis-2.redis.crudapp.svc.cluster.local:6379 \
+              redis-3.redis.crudapp.svc.cluster.local:6379 \
+              redis-4.redis.crudapp.svc.cluster.local:6379 \
+              redis-5.redis.crudapp.svc.cluster.local:6379 \
+              --cluster-replicas 1
+      restartPolicy: OnFailure

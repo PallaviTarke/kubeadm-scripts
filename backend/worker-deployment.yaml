@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-worker
+  namespace: crudapp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend-worker
+  template:
+    metadata:
+      labels:
+        app: backend-worker
+    spec:
+      containers:
+      - name: backend-worker
+        image: pallavitarke04/backend-crudapp:latest
+        command: ["node", "worker.js"]
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        env:
+        - name: MONGO_URI
+          value: "mongodb://cruduser:crudpass@mongo-0.mongo:27017,mongo-1.mongo:27017,mongo-2.mongo:27017/crudapp?replicaSet=rs0&authSource=crudapp"
+        - name: REDIS_NODES
+          value: "redis-0.redis:6379,redis-1.redis:6379,redis-2.redis:6379,redis-3.redis:6379,redis-4.redis:6379,redis-5.redis:6379"
+        - name: REDIS_PASSWORD
+          value: "pass123"

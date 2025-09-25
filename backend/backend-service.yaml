@@ -1,0 +1,13 @@
+# backend-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: crudapp
+spec:
+  selector:
+    app: backend
+  type: ClusterIP
+  ports:
+    - port: 5000        # Service port
+      targetPort: 5000  # Container port from backend-deployment.yaml

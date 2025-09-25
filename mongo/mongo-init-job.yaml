@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mongo-init
+  namespace: crudapp
+spec:
+  template:
+    spec:
+      containers:
+      - name: mongo-init
+        image: mongo:6
+        command: ["bash", "-c"]
+        args:
+          - |
+            sleep 10;
+
+            echo "🚀 Initiating replica set..."
+            mongo --host mongo-0.mongo:27017 --eval '
+              try {
+                rs.initiate({
+                  _id: "rs0",
+                  members: [
+                    { _id: 0, host: "mongo-0.mongo:27017" },
+                    { _id: 1, host: "mongo-1.mongo:27017" },
+                    { _id: 2, host: "mongo-2.mongo:27017" }
+                  ]
+                });
+              } catch (e) { print("Replica set may already be initialized"); }
+            '
+
+            sleep 5;
+
+            echo "👤 Creating users..."
+            mongo --host mongo-0.mongo:27017/admin --eval '
+              try {
+                db.createUser({ user: "admin", pwd: "adminpass", roles:[{role:"root",db:"admin"}] });
+              } catch (e) { print("Admin user may already exist"); }
+              try {
+                db.createUser({ user: "cruduser", pwd: "crudpass", roles:[{role:"readWrite",db:"crudapp"}] });
+              } catch (e) { print("Crud user may already exist"); }
+            '
+      restartPolicy: OnFailure
